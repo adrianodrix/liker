@@ -1,0 +1,26 @@
+@startuml
+title Liker
+header Build a real-time public post timeline\n with global like updates and in-browser notifications
+left to right direction
+
+User << Client >>
+usecase Post #FFBBBB
+usecase Notification #FFFAAA
+
+User->(Register)
+User->(Login)
+(Register)->(Login)
+
+User-left->(Post)
+Post-->(Create)
+Post-->(View)
+Post-->(Like) : Count Likes
+(Create)-->Notification
+(View)-->Notification
+(Like)-->Notification
+
+note top of Notification
+  Pusher
+end note
+
+@enduml

@@ -1,0 +1,14 @@
+@startuml
+title Liker
+header Build a real-time public post timeline\n with global like updates and in-browser notifications
+left to right direction
+
+class User
+class Post
+class Like
+
+User "*" --* "1" Post
+User "*" --* "1" Like
+Like "1" -- "1" Post
+
+@enduml
