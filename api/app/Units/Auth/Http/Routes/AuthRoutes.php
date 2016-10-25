@@ -11,9 +11,18 @@ class AuthRoutes extends RouteFile
      */
     protected function routes()
     {
-        $this->router->get('/', [
-            'as' => 'test.test',
-            'uses' => 'TestController@test'
-        ]);
+        /*
+         * Public Routes
+         */
+        $this->router->get('/',                 'TestController@test');
+        $this->router->post('auth/signin',      'LoginController@signin');
+        $this->router->post('auth/register',    'RegisterController@register');
+
+        /*
+         * Private Routes
+         */
+        $this->router->group(['middleware' => ['auth:api']], function () {
+            $this->router->get('auth/me', 'RegisterController@me');
+        });
     }
 }

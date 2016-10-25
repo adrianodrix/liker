@@ -1,6 +1,6 @@
 <?php
 
-namespace Liker\Units\Auth\Http\Controllers\Auth;
+namespace Liker\Units\Auth\Http\Controllers;
 
 use Liker\Support\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;

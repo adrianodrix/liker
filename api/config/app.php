@@ -166,14 +166,28 @@ return [
         /*
          * Package Service Providers...
          */
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         Barryvdh\Cors\ServiceProvider::class,
+        Prettus\Repository\Providers\RepositoryServiceProvider::class,
+        Arcanedev\LogViewer\LogViewerServiceProvider::class,
+        Asvae\ApiTester\ServiceProvider::class,
 
-        //
+        /*
+         * Support Service Providers...
+         */
+        Liker\Support\Database\SqlLoggingServiceProvider::class,
+
+        /*
+         * Domains Service Providers
+         */
+        Liker\Domains\Users\Providers\DomainServiceProvider::class,
+        Liker\Domains\Posts\Providers\DomainServiceProvider::class,
 
         /*
          * Units Service Providers...
          */
         Liker\Units\Auth\Providers\UnitServiceProvider::class,
+        Liker\Units\Posts\Providers\UnitServiceProvider::class,
     ],
 
     /*
@@ -221,6 +235,7 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'Fractal' => Spatie\Fractal\FractalFacade::class,
 
     ],
 

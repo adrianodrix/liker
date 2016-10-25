@@ -1,11 +1,17 @@
 <?php
 
-namespace Liker\Units\Auth\Http\Controllers\Auth;
+namespace Liker\Units\Auth\Http\Controllers;
 
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 use Liker\Domains\Users\Models\User;
+use Liker\Domains\Users\Repositories\Fractal\Transformers\UserTransformer;
+use Liker\Units\Auth\Http\Requests\LoginRequest;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Validator;
 use Liker\Support\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\RegistersUsers;
 
 class RegisterController extends Controller
 {
@@ -20,25 +26,6 @@ class RegisterController extends Controller
     |
     */
 
-    use RegistersUsers;
-
-    /**
-     * Where to redirect users after login / registration.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/home';
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('guest');
-    }
-
     /**
      * Get a validator for an incoming registration request.
      *
@@ -50,7 +37,7 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:6',
         ]);
     }
 
@@ -67,5 +54,61 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
         ]);
+    }
+
+    /**
+     * Return User Authenticated
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function me(Request $request)
+    {
+        return response()->json(
+            fractal()
+            ->item($request->user())
+            ->transformWith(new UserTransformer())
+            ->toArray(), Response::HTTP_OK);
+    }
+
+    /**
+     * Handle a registration request for the application.
+     *
+     * @param LoginRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function register(LoginRequest $request)
+    {
+        try {
+            $this->validator($request->all())->validate();
+            event(new Registered($user = $this->create($request->all())));
+            $this->guard()->login($user);
+            // attempt to verify the credentials and create a token for the user
+            $token = app('tymon.jwt.auth')->fromUser($user);
+        } catch (ValidationException $e) {
+            return response()->json(['error' => $e->validator->getMessageBag()], Response::HTTP_BAD_REQUEST);
+        } catch (JWTException $e) {
+            // something went wrong whilst attempting to encode the token
+            return response()->json(['error' => app('translator')->get('auth.could_not_create_token')], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json(
+            fractal()
+            ->item($user)
+            ->transformWith(new UserTransformer())
+            ->addMeta(['token' => $token])
+            ->toArray(), Response::HTTP_CREATED);
+    }
+
+    /**
+     * Get the guard to be used during registration.
+     *
+     * @return \Illuminate\Contracts\Auth\StatefulGuard
+     */
+    protected function guard()
+    {
+        return app('auth')->guard();
     }
 }
