@@ -5,6 +5,7 @@ namespace Liker\Units\Auth\Http\Controllers;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Liker\Domains\Users\Repositories\Fractal\Transformers\UserTransformer;
 use Liker\Support\Http\Controllers\Controller;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
@@ -37,12 +38,13 @@ class LoginController extends Controller
             return $this->sendLockoutResponse($request);
         }
 
-        // grab credentials from the request
-        $credentials = $request->only('email', 'password');
-
         try {
+            // grab credentials from the request
+            $credentials = $request->only('email', 'password');
+            $jwt = app('tymon.jwt.auth');
+
             // attempt to verify the credentials and create a token for the user
-            if (! $token = app('tymon.jwt.auth')->attempt($credentials)) {
+            if (! $token = $jwt->attempt($credentials)) {
                 // Increments login attempts
                 $this->incrementLoginAttempts($request);
 
@@ -57,7 +59,13 @@ class LoginController extends Controller
         }
 
         // all good so return the token
-        return response()->json(compact('token'), Response::HTTP_OK);
+        $user = $request->user();
+        return response()->json(
+                fractal()
+                ->item($user)
+                ->transformWith(new UserTransformer())
+                ->addMeta(['token' => $token])
+                ->toArray(), Response::HTTP_CREATED);
     }
 
     /**
