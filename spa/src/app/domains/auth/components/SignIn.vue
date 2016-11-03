@@ -18,10 +18,11 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import { isEmpty } from 'lodash'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
+  name: 'AuthSignIn',
   data () {
     return {
       user: {
@@ -31,12 +32,12 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['isLogged']),
     isValid () {
       const user = this.user
       return !isEmpty(user.email) && !isEmpty(user.password)
     }
   },
-  mounted () {},
   methods: {
     ...mapActions(['attemptLogin']),
     doLogin (e) {
@@ -44,11 +45,10 @@ export default {
       const user = this.user
       this.attemptLogin({...user})
         .then(() => {
-          this.$router.push({ name: 'post.index' })
+          this.$router.push({ name: 'posts.index' })
         })
     }
-  },
-  components: {}
+  }
 }
 </script>
 

@@ -2,7 +2,7 @@
   <div>
     <ul class="nav navbar-nav navbar-right">
       <router-link tag="li" :to="{ name: 'auth.signin' }" v-if="!isLogged" exact><a>Sign in</a></router-link>
-      <router-link tag="li" to="/" v-if="!isLogged" exact><a>Get an Account</a></router-link>
+      <router-link tag="li" :to="{ name: 'auth.signup' }" v-if="!isLogged" exact><a>Get an Account</a></router-link>
       <li class="dropdown" :class="{ open: isDropdownUserOpen }" v-if="isLogged">
         <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" @click="dropdownToggle()">
           <img :src="currentUser.avatar" class="img img-circle img-profile"/>
